@@ -15,6 +15,7 @@ def print_logs_stats(collection):
     # Total number of logs
     total_logs = collection.count_documents({})
     print("{} logs".format(total_logs))
+    print("Methods:")
 
     # Methods stats
     methods = ["GET", "POST", "PUT", "PATCH", "DELETE"]

@@ -64,15 +64,13 @@ class Cache:
             fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
         """
         Retrieve data from the cache using the provided key.
-
         Args:
         - key (str): The key associated with the stored data.
         - fn (Callable, optional): A callable function to convert the data
                                     back to the desired format.
-
         Returns:
-        - Union[str, bytes, int, float, None]: The retrieved data or None
-                                                if the key does not exist.
+        - Union[str, bytes, int, float, None]: The retrieved data or None if
+                                                the key does not exist.
         """
         data = self._redis.get(key)
         if data is not None and fn is not None:
@@ -82,25 +80,21 @@ class Cache:
     def get_str(self, key: str) -> Union[str, None]:
         """
         Retrieve data from the cache and convert it to a string.
-
         Args:
         - key (str): The key associated with the stored data.
-
         Returns:
-        - Union[str, None]: The retrieved data as a string or None if
-                            the key does not exist.
+        - Union[str, None]: The retrieved data as a string or None if the
+                            key does not exist.
         """
         return self.get(key, fn=lambda d: d.decode("utf-8"))
 
     def get_int(self, key: str) -> Union[int, None]:
         """
         Retrieve data from the cache and convert it to an integer.
-
         Args:
         - key (str): The key associated with the stored data.
-
         Returns:
-        - Union[int, None]: The retrieved data as an integer or None if the
-                            key does not exist.
+        - Union[int, None]: The retrieved data as an integer or
+                            None if the key does not exist.
         """
         return self.get(key, fn=int)

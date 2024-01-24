@@ -6,27 +6,6 @@ from functools import wraps
 from typing import Union, Callable, Optional, Any
 
 
-@staticmethod
-def count_calls(method: Callable) -> Callable:
-    """
-    Decorator to count the number of times a method is called.
-
-    Args:
-    - method (Callable): The method to be decorated.
-
-    Returns:
-    - Callable: The decorated method.
-    """
-    key = method.__qualname__
-
-    @wraps(method)
-    def wrapper(self, *args, **kwargs):
-        self._redis.incr(key)
-        return method(self, *args, **kwargs)
-
-    return wrapper
-
-
 class Cache:
     """
     A simple caching class using Redis.
@@ -39,11 +18,31 @@ class Cache:
         """
         Initialize a new Cache instance.
 
-        This creates an instance of the Redis client and flushes the
-        Redis database.
+        This creates an instance of the Redis client and flushes the Redis
+        database.
         """
         self._redis = redis.Redis()
         self._redis.flushdb()
+
+    @staticmethod
+    def count_calls(method: Callable) -> Callable:
+        """
+        Decorator to count the number of times a method is called.
+
+        Args:
+        - method (Callable): The method to be decorated.
+
+        Returns:
+        - Callable: The decorated method.
+        """
+        key = method.__qualname__
+
+        @wraps(method)
+        def wrapper(self, *args, **kwargs):
+            self._redis.incr(key)
+            return method(self, *args, **kwargs)
+
+        return wrapper
 
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
@@ -52,7 +51,7 @@ class Cache:
 
         Args:
         - data (Union[str, bytes, int, float]): The data to be stored in
-        the cache.
+                                                the cache.
 
         Returns:
         - str: A unique key associated with the stored data.
@@ -62,7 +61,7 @@ class Cache:
         return key
 
     def get(self, key: str,
-            fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
+            fn: Callable = None) -> Union[str, bytes, int, float, None]:
         """
         Retrieve data from the cache using the provided key.
 
@@ -72,8 +71,8 @@ class Cache:
                                     back to the desired format.
 
         Returns:
-        - Union[str, bytes, int, float, None]: The retrieved data or None if
-                                                the key does not exist.
+        - Union[str, bytes, int, float, None]: The retrieved data or None
+                                                if the key does not exist.
         """
         data = self._redis.get(key)
         if data is not None and fn is not None:
@@ -88,8 +87,8 @@ class Cache:
         - key (str): The key associated with the stored data.
 
         Returns:
-        - Union[str, None]: The retrieved data as a string or None if the
-                            key does not exist.
+        - Union[str, None]: The retrieved data as a string or None if
+                            the key does not exist.
         """
         return self.get(key, fn=lambda d: d.decode("utf-8"))
 
@@ -101,7 +100,7 @@ class Cache:
         - key (str): The key associated with the stored data.
 
         Returns:
-        - Union[int, None]: The retrieved data as an integer or
-                            None if the key does not exist.
+        - Union[int, None]: The retrieved data as an integer or None if the
+                            key does not exist.
         """
         return self.get(key, fn=int)
